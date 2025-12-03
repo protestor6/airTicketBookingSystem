@@ -66,9 +66,9 @@ void showGraph(const Graph& G){
 		printf("\n");
 	}
 }
-int main(){
-	Graph G;
-	fileInit(G);
-	showGraph(G);
-	return 0;
-}
+//int main(){
+//	Graph G;
+//	fileInit(G);
+//	showGraph(G);
+//	return 0;
+//}
