@@ -66,9 +66,15 @@ void showGraph(const Graph& G){
 		printf("\n");
 	}
 }
+int getVIndex(const Graph& G,char* str){	//返回该字符串对应点的下标，没找到则返回-1 
+	int i;
+	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
+	return i;
+} 
 //int main(){
 //	Graph G;
 //	fileInit(G);
 //	showGraph(G);
+//	printf("%d",getVIndex(G,"0")); 
 //	return 0;
 //}
