@@ -63,7 +63,7 @@ void showGraph(const Graph& G){
 	printf("邻接矩阵（MAX表示两点不通，数字代表有航班连通两地，数字为票务表中对应航班）：\n"); 
 	for(int i=0;i<G.vexnum;i++){
 		for(int j=0;j<G.vexnum;j++)
-			if(G.arcs[i][j]==-1)
+			if(G.arcs[i][j]==MAX)
 				printf("%4s ","MAX");
 			else
 				printf("%4d ",G.arcs[i][j]);
