@@ -1,5 +1,5 @@
-//Í¼Ïà¹Ø£¬Ò¶ÓÀÊ¢ÖÆ×÷2025/12/3 
-//¸ÃÍ·ÎÄ¼şĞèÒªÔÚÈı±íÖ®ºó±»ÒıÈë 
+//Í¼Ïà¹Ø£¬yysÖÆ×÷2025/12/3 
+//¸ÃÍ·ÎÄ¼şĞèÒªÔÚÈı±í(zl)Ö®ºó±»ÒıÈë 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,6 +7,7 @@
 #define MinANum 15	//×îĞ¡±ßÊı 
 #define MaxVNum 30	//×î´ó¶¥µãÊı£¨³ÇÊĞÊı£© ºÍ±ßÊı  
 #define MaxSNum 20	//µØÃû×î´ó³¤¶È 
+#define MAX -1
 typedef struct{
 	char vexs[MaxVNum][MaxSNum];	//×Ö·û´®£¬µÚÒ»Î¬±íÊ¾¶¥µã±í£¬µÚ¶şÎ¬±íÊ¾×Ö·û´®
 	int arcs[MaxVNum][MaxVNum];	//ÁÚ½Ó¾ØÕó£¬ÕâÀï¾ØÕóÀï´æ´¢µÄÊÇÆ±Îñ±íÖĞµÄË÷Òı£¬¼Û¸ñµÈĞÅÏ¢ĞèÒª´ÓÀïÃæÕÒ 
@@ -26,7 +27,7 @@ void fileInit(Graph &G){
 		printf("ÇëÒÀ´ÎÊäÈëÃ¿¸öµØµãµÄÃû³Æ£¨½öÏŞÓ¢ÎÄ×ÖÄ¸£¬×î´ó³¤¶ÈÎª20£¬²»ÄÜÓĞ¿Õ¸ñ£©\n");
 		for(int i=0;i<G.vexnum;i++)
 			scanf("%s",G.vexs[i]);
-		printf("ÊäÈëÁÚ½Ó¾ØÕó£¨0±íÊ¾Á½µã²»Í¨£¬ÆäËûÊı×Ö´ú±íÓĞº½°àÁ¬Í¨Á½µØ£¬Êı×ÖÎªÆ±Îñ±íÖĞ¶ÔÓ¦º½°à£©\n");
+		printf("ÊäÈëÁÚ½Ó¾ØÕó£¨-1±íÊ¾Á½µã²»Í¨£¬ÆäËûÊı×Ö´ú±íÓĞº½°àÁ¬Í¨Á½µØ£¬Êı×ÖÎªÆ±Îñ±íÖĞ¶ÔÓ¦º½°à£©\n");
 		for(int i=0;i<G.vexnum;i++){
 			printf("µÚ%d/%dĞĞ£º",i+1,G.vexnum);
 			for(int j=0;j<G.vexnum;j++)
@@ -59,10 +60,13 @@ void showGraph(const Graph& G){
 	printf("Í¼ÖĞÃ¿¸öµØµãÃû³Æ£º\n");
 	for(int i=0;i<G.vexnum;i++)
 		printf("%s\n",G.vexs[i]);
-	printf("ÁÚ½Ó¾ØÕó£¨0±íÊ¾Á½µã²»Í¨£¬ÆäËûÊı×Ö´ú±íÓĞº½°àÁ¬Í¨Á½µØ£¬Êı×ÖÎªÆ±Îñ±íÖĞ¶ÔÓ¦º½°à£©£º\n"); 
+	printf("ÁÚ½Ó¾ØÕó£¨MAX±íÊ¾Á½µã²»Í¨£¬Êı×Ö´ú±íÓĞº½°àÁ¬Í¨Á½µØ£¬Êı×ÖÎªÆ±Îñ±íÖĞ¶ÔÓ¦º½°à£©£º\n"); 
 	for(int i=0;i<G.vexnum;i++){
 		for(int j=0;j<G.vexnum;j++)
-			printf("%d ",G.arcs[i][j]);
+			if(G.arcs[i][j]==-1)
+				printf("%4s ","MAX");
+			else
+				printf("%4d ",G.arcs[i][j]);
 		printf("\n");
 	}
 }
@@ -75,6 +79,6 @@ int getVIndex(const Graph& G,char* str){	//·µ»Ø¸Ã×Ö·û´®¶ÔÓ¦µãµÄÏÂ±ê£¬Ã»ÕÒµ½Ôò·µ»
 //	Graph G;
 //	fileInit(G);
 //	showGraph(G);
-//	printf("%d",getVIndex(G,"0")); 
+//	printf("%d",getVIndex(G,"l")); 
 //	return 0;
 //}
