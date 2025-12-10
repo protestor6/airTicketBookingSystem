@@ -13,7 +13,7 @@ typedef struct{
 	int arcs[MaxVNum][MaxVNum];	//ÁÚ½Ó¾ØÕó£¬ÕâÀï¾ØÕóÀï´æ´¢µÄÊÇÆ±Îñ±íÖĞµÄË÷Òı£¬¼Û¸ñµÈĞÅÏ¢ĞèÒª´ÓÀïÃæÕÒ 
 	int vexnum,arcnum;	//Í¼µ±Ç°µÄµãÊıºÍ±ßÊı 
 }Graph;
-void fileInit(Graph &G){
+void fileInit(Graph &G){	//¶ÁĞ´ÎÄ¼ş£¬»ñÈ¡Í¼µÄĞÅÏ¢£¬Ã¿Á½µãÖ®¼äµÄÈ¨ÖµÊÇÆ±Îñ±íÖĞµÄid 
 	FILE *fin;
 	fin=fopen("info.txt","r");
 	if(fin==NULL){	//´ò¿ªÊ§°Ü 
@@ -55,7 +55,7 @@ void fileInit(Graph &G){
 			fscanf(fin,"%d",&G.arcs[i][j]);
 	fclose(fin); 
 }
-void showGraph(const Graph& G){
+void showGraph(const Graph& G){	//´òÓ¡Í¼µÄĞÅÏ¢ 
 	printf("µØµãÊı£º%d º½°àÊı£º%d\n",G.vexnum,G.arcnum);
 	printf("Í¼ÖĞÃ¿¸öµØµãÃû³Æ£º\n");
 	for(int i=0;i<G.vexnum;i++)
@@ -75,7 +75,7 @@ int getVIndex(const Graph& G,char* str){	//·µ»Ø¸Ã×Ö·û´®¶ÔÓ¦µãµÄÏÂ±ê£¬Ã»ÕÒµ½Ôò·µ»
 	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
 	return i;
 } 
-//int main(){
+//int main(){	//½ö²âÊÔÓÃ 
 //	Graph G;
 //	fileInit(G);
 //	showGraph(G);
