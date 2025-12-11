@@ -5,13 +5,15 @@
 #include <stdlib.h>
 #define MinVNum 10	//最少顶点数（城市数）
 #define MinANum 15	//最小边数 
-#define MaxVNum 30	//最大顶点数（城市数） 和边数  
+#define MaxVNum 15	//最大顶点数（城市数）
+#define MaxANum 210	//最大边数（实际上最多用到20条）  
 #define MaxSNum 20	//地名最大长度 
 #define MAX -1
 typedef struct{
 	char vexs[MaxVNum][MaxSNum];	//字符串，第一维表示顶点表，第二维表示字符串
-	int arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从里面找 
+	int arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，-1表示MAX 
 	int vexnum,arcnum;	//图当前的点数和边数 
+	bool visited[MaxVNum]={false};	//是否已经遍历过，用于dfs和bfs 
 }Graph;
 void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的id 
 	FILE *fin;
@@ -27,7 +29,7 @@ void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的i
 		printf("请依次输入每个地点的名称（仅限英文字母，最大长度为20，不能有空格）\n");
 		for(int i=0;i<G.vexnum;i++)
 			scanf("%s",G.vexs[i]);
-		printf("输入邻接矩阵（-1表示两点不通，其他数字代表有航班连通两地，数字为票务表中对应航班）\n");
+		printf("输入邻接矩阵（-1表示无穷大，其他数字代表有航班连通两地，数字为票务表中对应航班）\n");
 		for(int i=0;i<G.vexnum;i++){
 			printf("第%d/%d行：",i+1,G.vexnum);
 			for(int j=0;j<G.vexnum;j++)
@@ -70,15 +72,15 @@ void showGraph(const Graph& G){	//打印图的信息
 		printf("\n");
 	}
 }
-int getVIndex(const Graph& G,char* str){	//返回该字符串对应点的下标，没找到则返回-1 
-	int i;
-	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
-	return i;
-} 
-//int main(){	//仅测试用 
-//	Graph G;
-//	fileInit(G);
-//	showGraph(G);
+//int getVIndex(const Graph& G,char* str){	//返回该字符串对应点的下标，没找到则返回-1 
+//	int i;
+//	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
+//	return i;
+//} 
+int main(){	//仅测试用 
+	Graph G;
+	fileInit(G);
+	showGraph(G);
 //	printf("%d",getVIndex(G,"l")); 
-//	return 0;
-//}
+	return 0;
+}
