@@ -10,7 +10,7 @@
 #define MAX -1
 typedef struct{
 	char vexs[MaxVNum][MaxSNum];	//字符串，第一维表示顶点表，第二维表示字符串
-	int arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，-1表示MAX 
+	double arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，-1表示MAX 
 	int vexnum,arcnum;	//图当前的点数和边数 
 	bool visited[MaxVNum],available[MaxVNum][MaxVNum];	//是否已经遍历过，用于dfs和bfs；是否可用（如果不可用则为false） 
 }Graph;
@@ -32,7 +32,7 @@ void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的i
 		for(int i=0;i<G.vexnum;i++){
 			printf("第%d/%d行：",i+1,G.vexnum);
 			for(int j=0;j<G.vexnum;j++)
-				scanf("%d",&G.arcs[i][j]);
+				scanf("%lf",&G.arcs[i][j]);
 		}
 		//开始录入信息
 		FILE *fout;
@@ -42,7 +42,7 @@ void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的i
 			fprintf(fout,"%s\n",G.vexs[i]);
 		for(int i=0;i<G.vexnum;i++){
 			for(int j=0;j<G.vexnum;j++)
-				fprintf(fout,"%d ",G.arcs[i][j]);
+				fprintf(fout,"%lf ",G.arcs[i][j]);
 			fprintf(fout,"\n");
 		}
 		fclose(fout);
@@ -53,8 +53,12 @@ void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的i
 		fscanf(fin,"%s",G.vexs[i]);
 	for(int i=0;i<G.vexnum;i++)
 		for(int j=0;j<G.vexnum;j++)
-			fscanf(fin,"%d",&G.arcs[i][j]);
+			fscanf(fin,"%lf",&G.arcs[i][j]);
 	fclose(fin); 
+	memset(G.visited,false,sizeof(G.visited));
+	for(int i=0;i<G.vexnum;i++)
+		for(int j=0;j<G.vexnum;j++)
+			G.available[i][j]=false;
 }
 void showGraph(const Graph& G){	//打印图的信息 
 	printf("地点数：%d 航班数：%d\n",G.vexnum,G.arcnum);
@@ -65,21 +69,62 @@ void showGraph(const Graph& G){	//打印图的信息
 	for(int i=0;i<G.vexnum;i++){
 		for(int j=0;j<G.vexnum;j++)
 			if(G.arcs[i][j]==MAX)
-				printf("%4s ","MAX");
+				printf("%7s ","MAX");
 			else
-				printf("%4d ",G.arcs[i][j]);
+				printf("%7.2lf ",G.arcs[i][j]);
+		printf("\n");
+	}
+	printf("可用性：\n");
+	for(int i=0;i<G.vexnum;i++){
+		for(int j=0;j<G.vexnum;j++)
+			printf("%4d ",G.available[i][j]);
 		printf("\n");
 	}
 }
-//int getVIndex(const Graph& G,char* str){	//返回该字符串对应点的下标，没找到则返回-1 
-//	int i;
-//	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
-//	return i;
-//} 
+int getVIndex(const Graph& G,const char* str){	//返回该字符串对应点的下标，没找到则返回-1 
+	int i;
+	for(i=G.vexnum-1;i>=0&&strcmp(G.vexs[i],str)!=0;i--);
+	return i;
+}
+bool isConnected(const Graph& G,int an,int bn){	//两地是否直接连通 
+	if(an==-1||bn==-1)	return false;
+	if(G.arcs[an][bn]!=MAX)	return true;
+	return false;
+} 
+bool isConnected(const Graph& G,const char* sour,const char* dest){	//两地是否直接连通 
+	return isConnected(G,getVIndex(G,sour),getVIndex(G,dest));
+} 
+void setArcs(Graph &G,const char* sour,const char* dest,double price){	//将图中sour->dest这条边价格设为price
+	int an=getVIndex(G,sour),bn=getVIndex(G,dest);
+	if(an==-1||bn==-1){
+		printf("错误：不存在此地区\n");
+		return;
+	}
+	if(!isConnected(G,an,bn)){
+		printf("错误：这两地不直接连通\n");
+		return;
+	}
+	G.arcs[an][bn]=price;
+}
+void setAvailability(Graph &G,const char* sour,const char* dest,bool flag){	//将图中sour->dest这条边可用性设为flag 
+	int an=getVIndex(G,sour),bn=getVIndex(G,dest);
+	if(an==-1||bn==-1){
+		printf("错误：不存在此地区\n");
+		return;
+	}
+	if(!isConnected(G,an,bn)){
+		printf("错误：这两地不直接连通\n");
+		return;
+	}
+	G.available[an][bn]=flag;
+}
 int main(){	//仅测试用 
 	Graph G;
 	fileInit(G);
 	showGraph(G);
-//	printf("%d",getVIndex(G,"l")); 
+//	printf("%d",getVIndex(G,"g")); 
+//	setAvailability(G,"a","b",true);
+//	setArcs(G,"a","b",666);
+//	showGraph(G);
 	return 0;
 }
