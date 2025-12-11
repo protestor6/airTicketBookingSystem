@@ -7,13 +7,32 @@
 #define MaxVNum 15	//最大顶点数（城市数）
 #define MaxANum 210	//最大边数（实际上最多用到20条）  
 #define MaxSNum 20	//地名最大长度 
-#define MAX -1
+#define MAX 65536
 typedef struct{
 	char vexs[MaxVNum][MaxSNum];	//字符串，第一维表示顶点表，第二维表示字符串
 	double arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，-1表示MAX 
 	int vexnum,arcnum;	//图当前的点数和边数 
 	bool visited[MaxVNum],available[MaxVNum][MaxVNum];	//是否已经遍历过，用于dfs和bfs；是否可用（如果不可用则为false） 
 }Graph;
+typedef struct{
+	int base[MaxVNum];
+	int top;
+}Stack;
+void initStack(Stack &S){
+	S.top=0;
+}
+void Spush(Stack &S,int e){
+	S.base[S.top++]=e;
+}
+void Spop(Stack &S,int &e){
+	e=S.base[--S.top];
+}
+bool Sempty(const Stack& S){
+	return S.top==0;
+}
+int Stop(const Stack& S){
+	return S.base[S.top-1];
+}
 void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的id 
 	FILE *fin;
 	fin=fopen("info.txt","r");
@@ -118,6 +137,67 @@ void setAvailability(Graph &G,const char* sour,const char* dest,bool flag){	//将
 	}
 	G.available[an][bn]=flag;
 }
+void Dijkstra(Graph& G,int v0,int dest){	//2.dijkstra求票价最低转机
+	int n=G.vexnum,v;	//n为顶点个数
+	bool S[n];	//已确定的顶点集 
+	double D[n]; 	//当前最短路径长度 
+	int Path[n];	//vi直接前驱顶点序号 
+	//测试用 
+//	for(int i=0;i<G.vexnum;i++)
+//		for(int j=0;j<G.vexnum;j++)
+//			G.available[i][j]=true;
+//	G.available[8][7]=false;
+//	G.available[8][5]=false;
+//	G.available[8][4]=false;
+//	G.available[8][1]=false;
+	//测试用结束 
+	for(v=0;v<n;v++){
+		S[v]=false;
+		if(!G.available[v0][v])	D[v]=MAX;
+		else D[v]=G.arcs[v0][v];
+		if(G.available[v0][v]&&D[v]<MAX)	Path[v]=v0;	//如果v0和v之间有弧则前驱为v0，否则为-1
+		else Path[v]=-1; 
+	}
+	S[v0]=true;
+	D[v0]=0;
+	v=-1;	//没在V-S中找到任何与该点相连的可用边就是-1 
+	//初始化结束，接下来每次循环求v0到某顶点v的最短路径，把v加入S中
+	for(int i=1;i<n;i++){
+		int min=MAX;
+		for(int w=0;w<n;w++)
+			if(!S[w]&&D[w]<min){
+				v=w;
+				min=D[w]; 
+			}
+		if(v==-1)	continue; //没找到就换下一个点 
+		S[v]=true;
+		for(int w=0;w<n;w++)	//更新从v0到集合V-S上所有顶点的最短路径长度 
+			if(!S[w] && (D[v]+G.arcs[v][w]<D[w])){
+				D[w]=D[v]+G.arcs[v][w];
+				Path[w]=v;
+			} 
+	}
+	//打印结果
+	Stack St;
+	initStack(St); 
+	int t=dest;
+	while(t!=v0){
+		if(t==-1){	//二者之间没有可用转机路线 
+			printf("错误：这两地之间目前没有可用的转机路线\n");
+			return;
+		}
+		Spush(St,t);
+		t=Path[t];
+	} 
+	printf("路径如下\n");
+	double totDest=0;
+	for(int i=1;!Sempty(St);i++){
+		printf("第%d步：%d:%s->%d:%s\t价格：%.2lf\n",i,t,G.vexs[t],Stop(St),G.vexs[Stop(St)],G.arcs[t][Stop(St)]);
+		totDest+=G.arcs[t][Stop(St)];
+		Spop(St,t);
+	}
+	printf("总价格：%.2lf\n",totDest);
+}
 int main(){	//仅测试用 
 	Graph G;
 	fileInit(G);
@@ -126,5 +206,6 @@ int main(){	//仅测试用
 //	setAvailability(G,"a","b",true);
 //	setArcs(G,"a","b",666);
 //	showGraph(G);
+	Dijkstra(G,8,9);
 	return 0;
 }
