@@ -1,5 +1,4 @@
 //图相关，yys制作2025/12/3 
-//该头文件需要在三表(zl)之后被引入 
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +12,7 @@ typedef struct{
 	char vexs[MaxVNum][MaxSNum];	//字符串，第一维表示顶点表，第二维表示字符串
 	int arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，-1表示MAX 
 	int vexnum,arcnum;	//图当前的点数和边数 
-	bool visited[MaxVNum]={false};	//是否已经遍历过，用于dfs和bfs 
+	bool visited[MaxVNum],available[MaxVNum][MaxVNum];	//是否已经遍历过，用于dfs和bfs；是否可用（如果不可用则为false） 
 }Graph;
 void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的id 
 	FILE *fin;
@@ -29,7 +28,7 @@ void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的i
 		printf("请依次输入每个地点的名称（仅限英文字母，最大长度为20，不能有空格）\n");
 		for(int i=0;i<G.vexnum;i++)
 			scanf("%s",G.vexs[i]);
-		printf("输入邻接矩阵（-1表示无穷大，其他数字代表有航班连通两地，数字为票务表中对应航班）\n");
+		printf("输入邻接矩阵（-1表示无穷大，其他数字代表有航班连通两地）\n");
 		for(int i=0;i<G.vexnum;i++){
 			printf("第%d/%d行：",i+1,G.vexnum);
 			for(int j=0;j<G.vexnum;j++)
@@ -62,7 +61,7 @@ void showGraph(const Graph& G){	//打印图的信息
 	printf("图中每个地点名称：\n");
 	for(int i=0;i<G.vexnum;i++)
 		printf("%s\n",G.vexs[i]);
-	printf("邻接矩阵（MAX表示两点不通，数字代表有航班连通两地，数字为票务表中对应航班）：\n"); 
+	printf("邻接矩阵（MAX表示两点不通，其他数字代表有航班连通两地）：\n"); 
 	for(int i=0;i<G.vexnum;i++){
 		for(int j=0;j<G.vexnum;j++)
 			if(G.arcs[i][j]==MAX)
