@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <queue>
 #define MinVNum 10	//×îÉÙ¶¥µãÊı£¨³ÇÊĞÊı£©
 #define MinANum 15	//×îĞ¡±ßÊı 
 #define MaxVNum 15	//×î´ó¶¥µãÊı£¨³ÇÊĞÊı£©
@@ -229,16 +230,16 @@ void dfs(Graph& G,int curr,int dest,std::vector<int> &path,std::vector<std::vect
 } 
 void getAllRoutes(Graph& G,int start,int dest){	//»ñµÃÍ¼ÖĞ´Óstartµ½destËùÓĞ¿ÉÄÜµÄ×ª»úÂ·Ïß 
 	//²âÊÔÓÃ 
-	for(int i=0;i<G.vexnum;i++)
-		for(int j=0;j<G.vexnum;j++)
-			G.available[i][j]=true;
+//	for(int i=0;i<G.vexnum;i++)
+//		for(int j=0;j<G.vexnum;j++)
+//			G.available[i][j]=true;
 //	G.available[0][1]=false;
 //	G.available[0][8]=false;
 //	G.available[8][4]=false;
 //	G.available[8][1]=false;
 	//²âÊÔÓÃ½áÊø 
 	resetVisited(G);
-	std::vector<int> path(start);
+	std::vector<int> path;
 	std::vector<std::vector<int> > allPath;
 	allPath.clear();
 	G.visited[start]=true;
@@ -261,6 +262,50 @@ void getAllRoutes(Graph& G,int start,int dest){	//»ñµÃÍ¼ÖĞ´Óstartµ½destËùÓĞ¿ÉÄÜµ
 		}
 	}
 }
+void minTransRoute(Graph &G,int start,int dest){	//bfsµÃ³ö×ª»ú´ÎÊı×îÉÙµÄÂ·Ïß
+ 	resetVisited(G); 
+ 	//²âÊÔÓÃ 
+//	for(int i=0;i<G.vexnum;i++)
+//		for(int j=0;j<G.vexnum;j++)
+//			G.available[i][j]=true;
+////	G.available[0][1]=false;
+//	G.available[0][8]=false;
+//	G.available[8][4]=false;
+//	G.available[8][1]=false;
+	//²âÊÔÓÃ½áÊø 
+	std::vector<int> path;
+	path.push_back(start);
+	std::queue<std::vector<int> > q;	//´¢´æµ±Ç°Â·¾¶µÄ¶ÓÁĞ
+	q.push(path);
+	G.visited[start]=true;
+	while(!q.empty()){	//Ö»Òªq²»¿Õ
+	 	path=q.front();
+	 	q.pop();
+	 	int curr=path.back();	//µ±Ç°½áµã
+		if(curr==dest){
+			double totPrice=0;int prev=path.front();
+			printf("×ª»ú´ÎÊı×îÉÙµÄÂ·ÏßÎª£º%d£º%s",path.front(),G.vexs[path.front()]);
+			for(int i=1;i<path.size();i++){	//½ÓÏÂÀ´µÄÃ¿Ò»²½ 
+				double price=G.arcs[prev][path[i]];
+				printf(" ->%d£º%s ¼Û¸ñ£º%.2lfÔª",path[i],G.vexs[i],price);
+				totPrice+=price;
+				prev=path[i];
+			}
+			printf("\n×Ü¼Û¸ñ£º%.2lfÔª",totPrice);
+			return;
+		} 
+		for(int next=0;next<G.vexnum;next++){
+			if(isConnected(G,curr,next)&&G.available[curr][next]&&!G.visited[next]){
+				G.visited[next]=true;
+				std::vector<int> newPath=path;
+				newPath.push_back(next);
+				q.push(newPath);
+			}
+		}
+	}
+	//Èç¹ûÄÜÖ´ĞĞµ½ÕâÀïËµÃ÷Ã»ÓĞ¿ÉÓÃµÄ×ª»úÂ·Ïß
+	printf("ÎŞ¿ÉÓÃ×ª»úÂ·Ïß\n");
+}
 //int main(){	//½ö²âÊÔÓÃ 
 //	Graph G;
 //	fileInit(G);
@@ -270,6 +315,7 @@ void getAllRoutes(Graph& G,int start,int dest){	//»ñµÃÍ¼ÖĞ´Óstartµ½destËùÓĞ¿ÉÄÜµ
 ////	setArcs(G,"a","b",666);
 ////	showGraph(G);
 ////	Dijkstra(G,8,9);
-//	getAllRoutes(G,0,8);
+////	getAllRoutes(G,0,8);
+//	minTransRoute(G,0,4);
 //	return 0;
 //}
