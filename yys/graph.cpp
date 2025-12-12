@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 #define MinVNum 10	//最少顶点数（城市数）
 #define MinANum 15	//最小边数 
 #define MaxVNum 15	//最大顶点数（城市数）
@@ -198,14 +199,77 @@ void Dijkstra(Graph& G,int v0,int dest){	//2.dijkstra求票价最低转机
 	}
 	printf("总价格：%.2lf\n",totDest);
 }
-int main(){	//仅测试用 
-	Graph G;
-	fileInit(G);
-	showGraph(G);
-//	printf("%d",getVIndex(G,"g")); 
-//	setAvailability(G,"a","b",true);
-//	setArcs(G,"a","b",666);
-//	showGraph(G);
-	Dijkstra(G,8,9);
-	return 0;
+void resetVisited(Graph &G){	//把visited数组全部设为false，在遍历图之前必须调用 
+	memset(G.visited,false,sizeof(G.visited));
+} 
+//void dfs(int v){	//进行深度优先搜索遍历，获得所有可能的转机路线 
+//	cout<<vexs[v].showInfo()<<endl;	//访问第v个顶点 
+//	printf("")
+//	visited[v]=true; 
+//	for(int w=0;w<vexnum;w++)	//依次检查邻接矩阵v所在行，寻找未被访问的临界点并递归调用自己
+//		if(arcs[v][w]<Max && visited[w]==false){
+//			dfs(w);
+//		}
+//} 
+void dfs(Graph& G,int curr,int dest,std::vector<int> &path,std::vector<std::vector<int> > &allPath){	//进行深度优先搜索遍历，获得所有可能的转机路线
+//path记录前驱结点，pathlen记录path长度（最大210） 
+	if(curr==dest){	//递归终止条件
+	 	allPath.push_back(path);
+	 	return;
+	}
+	for(int next=0;next<G.vexnum;next++){	//遍历所有节点
+	 	if(isConnected(G,curr,next)&&G.available[curr][next]&&!G.visited[next]){
+	 		G.visited[next]=true;
+	 		path.push_back(next);
+	 		dfs(G,next,dest,path,allPath);
+	 		path.pop_back();	//回溯 
+	 		G.visited[next]=false;
+		}
+	}
+} 
+void getAllRoutes(Graph& G,int start,int dest){	//获得图中从start到dest所有可能的转机路线 
+	//测试用 
+	for(int i=0;i<G.vexnum;i++)
+		for(int j=0;j<G.vexnum;j++)
+			G.available[i][j]=true;
+//	G.available[0][1]=false;
+//	G.available[0][8]=false;
+//	G.available[8][4]=false;
+//	G.available[8][1]=false;
+	//测试用结束 
+	resetVisited(G);
+	std::vector<int> path(start);
+	std::vector<std::vector<int> > allPath;
+	allPath.clear();
+	G.visited[start]=true;
+	dfs(G,start,dest,path,allPath);
+	if(allPath.empty()){
+		printf("无可用转机路线\n");
+	}
+	else{
+		for(int i=0;i<allPath.size();i++){
+			double totPrice=0;
+			printf("路线%d：%d:%s",i+1,start,G.vexs[start]);
+			int prev=start;	//记录上一步的点坐标，方便算价格 
+			for(int j=0;j<allPath[i].size();j++){
+				printf("->%d:%s %.2lf元",allPath[i][j],G.vexs[allPath[i][j]],G.arcs[prev][allPath[i][j]]);
+				totPrice+=G.arcs[prev][allPath[i][j]];
+				prev=allPath[i][j];
+			}
+			printf("\n路线总价格为：%.2lf元",totPrice);
+			printf("\n");
+		}
+	}
 }
+//int main(){	//仅测试用 
+//	Graph G;
+//	fileInit(G);
+//	showGraph(G);
+////	printf("%d",getVIndex(G,"g")); 
+////	setAvailability(G,"a","b",true);
+////	setArcs(G,"a","b",666);
+////	showGraph(G);
+////	Dijkstra(G,8,9);
+//	getAllRoutes(G,0,8);
+//	return 0;
+//}
