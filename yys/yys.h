@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+//界面设计
 namespace YysPart{
 	//宏定义
 	#define MinVNum 10	//最少顶点数（城市数）
@@ -46,5 +47,8 @@ namespace YysPart{
 	//对外提供的函数
 		//给朱琳
 			void setArcs(Graph &G,const char* sour,const char* dest,double price);	//将图中sour->dest这条边价格设为price
-			void setAvailability(Graph &G,const char* sour,const char* dest,bool flag);	//将图中sour->dest这条边可用性设为flag  
+			void setAvailability(Graph &G,const char* sour,const char* dest,bool flag);	//将图中sour->dest这条边可用性设为flag 
+			bool getAvailability(Graph &G,const char* sour,const char* dest);	//获得图中sour->dest这条边可用性
+			char* currentTime();	//当前时间 
 }
+void graphGUI(YysPart::Graph& G);

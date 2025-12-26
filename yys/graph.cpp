@@ -8,7 +8,7 @@ namespace YysPart{
 	#include "yys.h"
 	typedef struct{
 		char vexs[MaxVNum][MaxSNum];	//字符串，第一维表示顶点表，第二维表示字符串
-		double arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是票务表中的索引，价格等信息需要从表里面找，65536表示INF 
+		double arcs[MaxVNum][MaxVNum];	//邻接矩阵，这里矩阵里存储的是价格等信息需要从表里面找，65536表示INF,65535表示有边 
 		int vexnum,arcnum;	//图当前的点数和边数 
 		bool visited[MaxVNum],available[MaxVNum][MaxVNum];	//是否已经遍历过，用于dfs和bfs；是否可用（如果不可用则为false） 
 	}Graph;
@@ -33,7 +33,7 @@ namespace YysPart{
 	}
 	void fileInit(Graph &G){	//读写文件，获取图的信息，每两点之间的权值是票务表中的票价 
 		FILE *fin;
-		fin=fopen("info.txt","r");
+		fin=fopen("yys/info.txt","r");
 		if(fin==NULL){	//打开失败 
 			printf("未找到航行图文件，将生成\n");
 			printf("请输入地点数和航班数（用空格隔开）\n");
@@ -53,7 +53,7 @@ namespace YysPart{
 			}
 			//开始录入信息
 			FILE *fout;
-			fout=fopen("info.txt","w");
+			fout=fopen("yys/info.txt","w");
 			fprintf(fout,"%d %d\n",G.vexnum,G.arcnum);
 			for(int i=0;i<G.vexnum;i++)
 				fprintf(fout,"%s\n",G.vexs[i]);
@@ -135,20 +135,39 @@ namespace YysPart{
 		}
 		G.available[an][bn]=flag;
 	}
+	bool getAvailability(Graph &G,const char* sour,const char* dest){	//获得图中sour->dest这条边可用性
+		int an=getVIndex(G,sour),bn=getVIndex(G,dest);
+		if(an==-1||bn==-1){
+			return false;
+		}
+		if(!isConnected(G,an,bn)){
+			return false;
+		}
+		return G.available[an][bn];
+	}
+	char* currentTime(){
+		FILE *fin;
+		static char cTime[17];	//防止局部变量销毁导致的野指针 
+		fin=fopen("yys/currentTime.txt","r");
+		if(fin==NULL){	//没有该文件
+			printf("错误：未找到currentTime.txt，将生成...\n");
+			printf("请输入当前时间（格式：YYYY-MM-DD-HH:MM）：");
+			scanf("%s",cTime);
+			FILE *fout;
+			fout=fopen("yys/currentTime.txt","w");
+			fprintf(fout,"%s",cTime);
+			fclose(fout);
+			printf("文件已生成，请重启程序！\n");
+			exit(0);
+		}
+		fscanf(fin,"%s",cTime);
+		return cTime;
+	}
 	void Dijkstra(Graph& G,int v0,int dest){	//2.dijkstra求票价最低转机
 		int n=G.vexnum,v;	//n为顶点个数
 		bool S[n];	//已确定的顶点集 
 		double D[n]; 	//当前最短路径长度 
 		int Path[n];	//vi直接前驱顶点序号 
-		//测试用 
-	//	for(int i=0;i<G.vexnum;i++)
-	//		for(int j=0;j<G.vexnum;j++)
-	//			G.available[i][j]=true;
-	//	G.available[8][7]=false;
-	//	G.available[8][5]=false;
-	//	G.available[8][4]=false;
-	//	G.available[8][1]=false;
-		//测试用结束 
 		for(v=0;v<n;v++){
 			S[v]=false;
 			if(!G.available[v0][v])	D[v]=INF;
@@ -216,15 +235,6 @@ namespace YysPart{
 		}
 	} 
 	void getAllRoutes(Graph& G,int start,int dest){	//获得图中从start到dest所有可能的转机路线 
-		//测试用 
-//		for(int i=0;i<G.vexnum;i++)
-//			for(int j=0;j<G.vexnum;j++)
-//				G.available[i][j]=true;
-	//	G.available[0][1]=false;
-	//	G.available[0][8]=false;
-	//	G.available[8][4]=false;
-	//	G.available[8][1]=false;
-		//测试用结束 
 		resetVisited(G);
 		std::vector<int> path;
 		std::vector<std::vector<int> > allPath;
@@ -251,15 +261,6 @@ namespace YysPart{
 	}
 	void minTransRoute(Graph &G,int start,int dest){	//bfs得出转机次数最少的路线
 	 	resetVisited(G); 
-	 	//测试用 
-//		for(int i=0;i<G.vexnum;i++)
-//			for(int j=0;j<G.vexnum;j++)
-//				G.available[i][j]=true;
-	//	G.available[0][1]=false;
-	//	G.available[0][8]=false;
-	//	G.available[8][4]=false;
-	//	G.available[8][1]=false;
-		//测试用结束 
 		std::vector<int> path;
 		path.push_back(start);
 		std::queue<std::vector<int> > q;	//储存当前路径的队列
@@ -278,7 +279,7 @@ namespace YysPart{
 					totPrice+=price;
 					prev=path[i];
 				}
-				printf("\n总价格：%.2lf元",totPrice);
+				printf("\n总价格：%.2lf元\n",totPrice);
 				return;
 			} 
 			for(int next=0;next<G.vexnum;next++){
@@ -294,17 +295,89 @@ namespace YysPart{
 		printf("无可用转机路线\n");
 	}
 }
-//int main(){	//仅测试用 
-//	using namespace YysPart; 
-//	Graph G;
-//	fileInit(G);
-//	showGraph(G);
-//	//	printf("%d",getVIndex(G,"g")); 
-//	//	setAvailability(G,"a","b",true);
-//	//	setArcs(G,"a","b",666);
-//	//	showGraph(G);
-//	//	Dijkstra(G,8,9);
-//	getAllRoutes(G,0,8);
-//	minTransRoute(G,0,9);
-//	return 0;
-//}
+void graphGUI(YysPart::Graph& G){	//图界面设计
+	int option;
+	printf("\n欢迎进入航行图模块:)\n");
+	printf("输入相应数字进入对应功能：\n");
+	while(1){
+	 	char a[MaxSNum],b[MaxSNum];
+	 	printf("0：返回\n");
+	 	printf("1：清屏\n");
+	 	printf("2：显示该图的所有信息\n");
+	 	printf("3：求票价最低转机路线\n");
+	 	printf("4：求所有可能的转机路线\n");
+	 	printf("5：求转机次数最少的路线\n");
+	 	printf("6：将可用性全部设置为true(记得退出时使用功能7关掉)\n");
+	 	printf("7：将可用性全部设置为false\n");
+	 	scanf("%d",&option);
+	 	switch(option){
+	 		case 0:
+	 			return;
+	 		case 1:
+	 			system("cls");
+	 			break;
+	 		case 2:
+	 			showGraph(G);
+	 			break;
+	 		case 3:
+	 			printf("请输入起点：\n");
+	 			scanf("%s",a);
+	 			if(getVIndex(G,a)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			printf("请输入终点：\n");
+	 			scanf("%s",b);
+	 			if(getVIndex(G,b)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			Dijkstra(G,getVIndex(G,a),getVIndex(G,b));
+	 			break;
+	 		case 4:
+	 			printf("请输入起点：\n");
+	 			scanf("%s",a);
+	 			if(getVIndex(G,a)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			printf("请输入终点：\n");
+	 			scanf("%s",b);
+	 			if(getVIndex(G,b)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			getAllRoutes(G,getVIndex(G,a),getVIndex(G,b));
+	 			break;
+	 		case 5:
+	 			printf("请输入起点：\n");
+	 			scanf("%s",a);
+	 			if(getVIndex(G,a)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			printf("请输入终点：\n");
+	 			scanf("%s",b);
+	 			if(getVIndex(G,b)==-1) {
+	 				printf("地点不存在！\n");
+	 				break;
+				}
+	 			minTransRoute(G,getVIndex(G,a),getVIndex(G,b));
+	 			break;
+	 		case 6:
+	 			for(int i=0;i<G.vexnum;i++)
+					for(int j=0;j<G.vexnum;j++)
+						G.available[i][j]=true;
+				printf("成功使所有边可用！\n");
+				break;
+			case 7:
+	 			for(int i=0;i<G.vexnum;i++)
+					for(int j=0;j<G.vexnum;j++)
+						G.available[i][j]=false;
+				printf("成功使所有边不可用！\n");
+				break;
+	 		default:
+	 			printf("无效输入！\n");
+		}
+	}
+} 
